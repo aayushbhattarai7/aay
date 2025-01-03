@@ -1,0 +1,176 @@
+﻿@page "/dashboard"
+@using practice.Models
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+
+<h3>Hi, @UserService.loggedInUserName!</h3>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-header">Credit</div>
+            <div class="card-body">
+                <h5 class="card-title">Your Credit Balance</h5>
+                <p class="card-text">@CurrentUser?.Credit</p>
+                <button class="btn btn-light mt-3" @onclick="ShowInputField">Add Credit</button>
+
+                @if (IsInputVisible)
+                {
+                    <div style="margin-top: 1rem;">
+                        <input type="number" class="form-control mb-2" @bind="NewCredit" placeholder="Enter credit amount">
+                        <button class="btn btn-primary" @onclick="SubmitCredit">Submit</button>
+                        <button class="btn btn-secondary" @onclick="HideInputField">Cancel</button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="text-danger">@ErrorMessage</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card text-white bg-dark">
+            <div class="card-header">Debit</div>
+            <div class="card-body">
+                <h5 class="card-title">Your Debit</h5>
+                <p class="card-text">@CurrentUser?.Debit</p>
+                <button class="btn btn-light mt-3" @onclick="ShowInputFieldDebit">Add Debit</button>
+
+                @if (IsInputVisibleDebit)
+                {
+                    <div style="margin-top: 1rem;">
+                        <input type="number" class="form-control mb-2" @bind="NewDebit" placeholder="Enter debit amount">
+                        <button class="btn btn-primary" @onclick="SubmitDebit">Submit</button>
+                        <button class="btn btn-secondary" @onclick="HideInputFieldDebit">Cancel</button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(ErrorMessageDebit))
+                {
+                    <div class="text-danger">@ErrorMessageDebit</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card text-white bg-danger">
+            <div class="card-header">Debt</div>
+            <div class="card-body">
+                <h5 class="card-title">Your Debt</h5>
+                <p class="card-text">@CurrentUser?.Debt</p>
+                <button class="btn btn-light mt-3" @onclick="ShowInputFieldDept">Add Debt</button>
+
+                @if (IsInputVisibleDebt)
+                {
+                    <div style="margin-top: 1rem;">
+                        <input type="number" class="form-control mb-2" @bind="NewDebt" placeholder="Enter debt amount">
+                        <button class="btn btn-primary" @onclick="SubmitDebt">Submit</button>
+                        <button class="btn btn-secondary" @onclick="HideInputFieldDept">Cancel</button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(ErrorMessageDebit))
+                {
+                    <div class="text-danger">@ErrorMessageDebit</div>
+                }
+                <button class="btn btn-secondary mt-3 ms-2" @onclick="ClearDebtBalance">Clear Debit</button> 
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private int NewCredit { get; set; }
+    private int NewDebit { get; set; }
+    private int NewDebt { get; set; }
+    private bool IsInputVisible { get; set; } = false;
+    private bool IsInputVisibleDebit { get; set; } = false;
+    private bool IsInputVisibleDebt { get; set; } = false;
+    private string ErrorMessage { get; set; } = string.Empty;
+    private string ErrorMessageDebit { get; set; } = string.Empty;
+    private string ErrorMessageDebt { get; set; } = string.Empty;
+    private User? CurrentUser { get; set; }
+
+    protected override void OnInitialized()
+    {
+        CurrentUser = UserService.GetLoggedInUser();
+    }
+
+    private void ShowInputField() => IsInputVisible = true;
+    private void ShowInputFieldDebit() => IsInputVisibleDebit = true;
+    private void ShowInputFieldDept() => IsInputVisibleDebt = true;
+    private void HideInputField() => IsInputVisible = false;
+    private void HideInputFieldDebit() => IsInputVisibleDebit = false;
+    private void HideInputFieldDept() => IsInputVisibleDebt = false;
+
+    private void SubmitCredit()
+    {
+        if (NewCredit > 0)
+        {
+            UserService.UpdateCredit(UserService.loggedInUserName, NewCredit);
+            CurrentUser = UserService.GetLoggedInUser(); 
+            NewCredit = 0;
+            IsInputVisible = false;
+            ErrorMessage = string.Empty;
+        }
+        else
+        {
+            ErrorMessage = "Please enter a valid credit amount.";
+        }
+    }
+
+    private void SubmitDebit()
+    {
+        if (NewDebit > 0)
+        {
+            UserService.UpdateDebit(UserService.loggedInUserName, NewDebit);
+            CurrentUser = UserService.GetLoggedInUser();
+            NewDebit = 0;
+            IsInputVisibleDebit = false;
+            ErrorMessageDebit = string.Empty;
+        }
+        else
+        {
+            ErrorMessageDebit = "Please enter a valid debit amount.";
+        }
+    }
+
+    private void SubmitDebt()
+    {
+        if(NewDebt > 0)
+        {
+            UserService.UpdateDebt(UserService.loggedInUserName, NewDebt);
+            CurrentUser = UserService.GetLoggedInUser();
+            NewDebt = 0;
+            IsInputVisibleDebt = false;
+            ErrorMessageDebit = string.Empty;
+        }
+        else
+        {
+            ErrorMessageDebit = "Please enter a valid debt amount.";
+        }
+    }
+
+
+    private void ClearDebtBalance()
+    {
+        try
+        {
+            UserService.ClearDebt(UserService.loggedInUserName);
+            CurrentUser = UserService.GetLoggedInUser();
+            ErrorMessage = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    
+}
